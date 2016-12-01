@@ -1,0 +1,75 @@
+----View 1: Count the randomArrayItems.
+{
+  "_id": "_design/countRandomArrayItems",
+  "_rev": "7-cebd9b7f22fdce0e8b6ced2f3b4a3bc0",
+  "language": "javascript",
+  "views": {
+    "query1": {
+      "reduce": "function (keys, values, rereduce) {\n  var maxAge = -Infinity, names = [];\n  if (rereduce) {\n    for (var i in values) {\n      if (maxAge < values[i].age) {\n        maxAge = values[i].age;\n      }\n    }\n    \n    for (var i in values) {\n      if (values[i].age === maxAge) {\n        names = names.concat(values[i].names);\n      }\n    }\n  } else {\n    for (var i in values) {\n      if (maxAge < values[i].age) {\n        maxAge = values[i].age;\n      }\n    }\n    \n    for (var i in values) {\n      if (values[i].age === maxAge) {\n        names.push(values[i].name);\n      }\n    }\n  }\n  return {age: maxAge, names: names};\n}",
+      "map": "function(doc) {\n  for (var i in doc.data) {\n    var person = doc.data[i];\n    emit(person.randomArrayItem, 1);\n  }\n}"
+    }
+  }
+}
+
+----View 2: Names(s) of the person(s) with the maximum age, and their age(s) by gender and whether they are active or not.
+{
+  "_id": "_design/maxAgeActiveOrNot",
+  "_rev": "6-b660fe5667e17203368d0a531d965b66",
+  "views": {
+    "query2": {
+      "reduce": "function (keys, values, rereduce) {\n  var maxAge = -Infinity, names = [];\n  if (rereduce) {\n    for (var i in values) {\n      if (maxAge < values[i].age) {\n        maxAge = values[i].age;\n      }\n    }\n    \n    for (var i in values) {\n      if (values[i].age === maxAge) {\n        names = names.concat(values[i].names);\n      }\n    }\n  } else {\n    for (var i in values) {\n      if (maxAge < values[i].age) {\n        maxAge = values[i].age;\n      }\n    }\n    \n    for (var i in values) {\n      if (values[i].age === maxAge) {\n        names.push(values[i].name);\n      }\n    }\n  }\n  return {age: maxAge, names: names};\n}",
+      "map": "function (doc) {\n  for (var i in doc.data) {\n    var person = doc.data[i];\n    emit([person.isActive, person.gender], {age: person.age, name: person.name});\n  }\n}"
+    }
+  },
+  "language": "javascript"
+}
+
+----View 3: A count of the poeple by tags, that is, count all the people with the given value in the tags array.
+{
+  "_id": "_design/countyByTags",
+  "_rev": "7-75989a5cd5a689e7705f466a59f78103",
+  "views": {
+    "query3": {
+      "map": "function (doc) {\n  for (var i in doc.data) {\n    var person = doc.data[i];\n    for (var i in person.tags) {\n      emit(person.tags[i], 1);\n    }\n  }\n}",
+      "reduce": "_count"
+    }
+  },
+  "language": "javascript"
+}
+
+----View 4: The average age of people by company.
+{
+  "_id": "_design/averageAgeByCompany",
+  "_rev": "6-027b7162443166630d9e8e45d489973a",
+  "views": {
+    "query4": {
+      "map": "function (doc) {\n  for (var i in doc.data) {\n    var person = doc.data[i];\n    emit(person.company, person.age);\n  }\n}",
+      "reduce": "function (keys, values, rereduce) {\n  return sum(values) / values.length;\n}"
+    }
+  },
+  "language": "javascript"
+}
+
+----View 5: The JSON of the lattitude, longitude, and address of each employee that has a lattitude of more than 80.
+{
+  "_id": "_design/lattitudeMoreThanEighty",
+  "_rev": "11-c9c275d64abfcba19a3d087ea83ea02a",
+  "views": {
+    "query5": {
+      "map": "function (doc) {\n  for (var i in doc.data) {\n    var person = doc.data[i];\n    if (person.latitude > 80.0) {\n      emit(person.id, {latitude: person.latitude, longitude: person.longitude, address: person.address});\n    }\n  }\n}"
+    }
+  },
+  "language": "javascript"
+}
+
+----View 6: Names of people and their friends that start with the letter "J" if they have at least one friend whose name starts with the letter "J". 
+{
+  "_id": "_design/startsWithJ",
+  "_rev": "15-2552ae23b3656ce38e05608a8e128c53",
+  "views": {
+    "query6": {
+      "map": "function (doc) {\n  for (var i in doc.data) {\n    var person = doc.data[i];\n    \n    for (var j in person.friends) {\n      if (person.friends[j].name[0] === \"J\") {\n        emit(person.name, person.friends[j].name);\n      }\n    }\n  }\n}"
+    }
+  },
+  "language": "javascript"
+}

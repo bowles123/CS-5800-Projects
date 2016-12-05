@@ -1,11 +1,11 @@
 ----View 1: Count the randomArrayItems.
 {
   "_id": "_design/countRandomArrayItems",
-  "_rev": "7-cebd9b7f22fdce0e8b6ced2f3b4a3bc0",
+  "_rev": "9-6e6132e9a867eb62e733c78207ba87cb",
   "language": "javascript",
   "views": {
     "query1": {
-      "reduce": "function (keys, values, rereduce) {\n  var maxAge = -Infinity, names = [];\n  if (rereduce) {\n    for (var i in values) {\n      if (maxAge < values[i].age) {\n        maxAge = values[i].age;\n      }\n    }\n    \n    for (var i in values) {\n      if (values[i].age === maxAge) {\n        names = names.concat(values[i].names);\n      }\n    }\n  } else {\n    for (var i in values) {\n      if (maxAge < values[i].age) {\n        maxAge = values[i].age;\n      }\n    }\n    \n    for (var i in values) {\n      if (values[i].age === maxAge) {\n        names.push(values[i].name);\n      }\n    }\n  }\n  return {age: maxAge, names: names};\n}",
+      "reduce": "_count",
       "map": "function(doc) {\n  for (var i in doc.data) {\n    var person = doc.data[i];\n    emit(person.randomArrayItem, 1);\n  }\n}"
     }
   }
